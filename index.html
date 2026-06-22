@@ -4,8 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Entelect New Joiner Passport</title>
+    <!-- HTML5-QRCode Library for real camera scanning -->
+    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
     <style>
-        /* Global Reset & Typography matching the Print PDF Layout */
         *, *::before, *::after {
             box-sizing: border-box;
         }
@@ -23,7 +24,7 @@
             min-height: 100vh;
         }
 
-        /* Mobile Container to wrap the app view inside a clean device viewport */
+        /* Smartphone view wrapper */
         .phone-wrapper {
             width: 100%;
             max-width: 420px;
@@ -32,10 +33,10 @@
             display: flex;
             flex-direction: column;
             position: relative;
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
         }
 
-        /* Top Sticky Progress Dashboard Header */
+        /* Fixed Top Progress Header */
         .app-header {
             background: linear-gradient(135deg, #f0fdf4 0%, #f0f9ff 100%);
             border-bottom: 1px solid #cbd5e1;
@@ -66,7 +67,6 @@
             margin-bottom: 12px;
         }
 
-        /* Live Progress Bar Engine styling */
         .progress-container {
             width: 100%;
             background-color: #e2e8f0;
@@ -89,11 +89,10 @@
             text-align: right;
         }
 
-        /* Screen Wrapper Main Layout */
         .app-content {
             padding: 16px;
             flex-grow: 1;
-            margin-bottom: 65px;
+            margin-bottom: 75px;
         }
         .view-panel {
             display: none;
@@ -102,7 +101,7 @@
             display: block;
         }
 
-        /* Profile Block Elements mirroring the PDF interface layout */
+        /* Identity Profile Card */
         .profile-container {
             display: flex;
             gap: 12px;
@@ -146,7 +145,6 @@
             padding-bottom: 2px;
         }
 
-        /* Character Select Archetype Grid */
         h2 {
             font-size: 14px;
             font-weight: 700;
@@ -155,6 +153,8 @@
             padding-bottom: 4px;
             margin: 16px 0 12px 0;
         }
+
+        /* Class Archetype Cards */
         .archetype-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -191,7 +191,7 @@
             margin-top: 2px;
         }
 
-        /* Quest Card components styled cleanly with custom side border coloring */
+        /* Quest Card Designs */
         .quest-box {
             background-color: #f8fafc;
             border: 1px solid #cbd5e1;
@@ -230,7 +230,7 @@
         .quest-box.rose .stamp-slot { border-color: #be123c; color: #be123c; }
         .quest-box.amber .stamp-slot { border-color: #b45309; color: #b45309; }
 
-        /* Unlocked Badge visual overwrite state */
+        /* Success/Unlocked States */
         .quest-box.unlocked-state {
             background-color: #f0fdf4;
             border-color: #bbf7d0;
@@ -249,7 +249,6 @@
             margin-bottom: 10px;
         }
 
-        /* Checkbox lists for onboarding tasks */
         .task-list {
             margin: 0;
             padding: 0;
@@ -275,14 +274,14 @@
             font-weight: 600;
         }
 
-        /* Action Buttons */
+        /* Scan Trigger Buttons */
         .btn-scan {
             display: none;
             width: 100%;
             background-color: #0f172a;
             color: #ffffff;
             border: none;
-            padding: 8px;
+            padding: 10px;
             font-size: 11px;
             font-weight: bold;
             text-transform: uppercase;
@@ -298,13 +297,13 @@
             display: none !important;
         }
 
-        /* Sticky Bottom Navigation Bar layout for thumb controls */
+        /* Navigation Bar */
         .bottom-nav {
             position: fixed;
             bottom: 0;
             width: 100%;
             max-width: 420px;
-            height: 56px;
+            height: 60px;
             background-color: #ffffff;
             border-top: 1px solid #cbd5e1;
             display: flex;
@@ -317,7 +316,7 @@
             justify-content: center;
             align-items: center;
             color: #64748b;
-            font-size: 11px;
+            font-size: 10px;
             font-weight: bold;
             cursor: pointer;
             text-decoration: none;
@@ -331,13 +330,14 @@
             margin-bottom: 2px;
         }
 
-        /* Modal Overlay Interfaces (QR Cam Simulator, Social Share Sheet, and Final Easter Egg Overlay) */
+        /* Modals & Camera Interfaces */
         .modal-overlay {
             position: absolute;
             top: 0; left: 0; right: 0; bottom: 0;
-            background-color: rgba(15, 23, 42, 0.7);
+            background-color: rgba(15, 23, 42, 0.85);
             z-index: 200;
             display: none;
+            flex-direction: column;
             justify-content: center;
             align-items: center;
             padding: 20px;
@@ -351,30 +351,21 @@
             text-align: center;
         }
 
-        /* Mock QR Viewfinder interface animation */
-        .qr-scanner-box {
-            width: 180px;
-            height: 180px;
-            border: 3px solid #0284c7;
-            margin: 16px auto;
-            position: relative;
+        /* Container for HTML5-QRCode scanner */
+        #qr-reader-container {
+            width: 100%;
+            max-width: 280px;
+            margin: 15px auto;
+            border-radius: 8px;
+            overflow: hidden;
             background-color: #0f172a;
+            border: 2px solid #0284c7;
         }
-        .qr-scanner-box::after {
-            content: "";
-            position: absolute;
-            left: 0; width: 100%; height: 2px;
-            background-color: #00ffcc;
-            top: 0;
-            animation: scanLine 2s linear infinite;
-        }
-        @keyframes scanLine {
-            0% { top: 0; }
-            50% { top: 100%; }
-            100% { top: 0; }
+        #qr-reader {
+            width: 100% !important;
+            border: none !important;
         }
 
-        /* Share Intent Sheet overlay */
         .share-btn-container {
             display: flex;
             flex-direction: column;
@@ -389,6 +380,7 @@
             text-decoration: none;
             font-size: 12px;
             text-transform: uppercase;
+            text-align: center;
         }
         .btn-linkedin { background-color: #0077b5; }
         .btn-instagram { background-color: #e1306c; }
@@ -396,30 +388,61 @@
             background-color: #64748b;
             color: white;
             border: none;
-            padding: 8px;
+            padding: 10px;
             width: 100%;
             margin-top: 8px;
             border-radius: 4px;
             cursor: pointer;
+            font-weight: bold;
         }
 
-        /* Easter Egg Terminal Screen Styling override */
+        /* Terminal Overlay for Easter Egg */
         #easter-egg-screen {
             background-color: #020617;
             color: #00ffcc;
             font-family: 'Courier New', Courier, monospace;
-            flex-direction: column;
             padding: 30px;
             text-align: left;
+            align-items: flex-start;
         }
         #easter-egg-screen h2 {
             color: #ffffff;
             border-bottom: 1px solid #00ffcc;
+            margin-bottom: 15px;
         }
         .terminal-text {
-            margin-bottom: 16px;
             line-height: 1.6;
             font-size: 13px;
+        }
+
+        /* Info boxes */
+        .info-box {
+            background-color: #f0f9ff;
+            border: 1px solid #bae6fd;
+            border-radius: 6px;
+            padding: 12px;
+            margin-bottom: 16px;
+            font-size: 11px;
+            color: #0369a1;
+        }
+
+        /* Stamps Demo Tab Visuals */
+        .stamp-preview-box {
+            background-color: #f8fafc;
+            border: 1px dashed #cbd5e1;
+            border-radius: 6px;
+            padding: 16px;
+            margin-bottom: 16px;
+            text-align: center;
+        }
+        .qr-image {
+            width: 160px;
+            height: 160px;
+            margin: 10px auto;
+            display: block;
+            border: 1px solid #e2e8f0;
+            background-color: #ffffff;
+            padding: 5px;
         }
     </style>
 </head>
@@ -427,7 +450,7 @@
 
     <div class="phone-wrapper">
         
-        <!-- Live Header Synchronizing Progress Metrics -->
+        <!-- Live Header with Automated Synced Progress Tracker -->
         <div class="app-header">
             <h1>New Joiner Passport</h1>
             <div class="subtitle">Entelect Onboarding Log</div>
@@ -439,10 +462,9 @@
 
         <div class="app-content">
 
-            <!-- TAB SCREEN 1: THE CORE LOG AND QUEST SYSTEM -->
+            <!-- TAB 1: PASSIVE/ACTIVE ONBOARDING QUESTS -->
             <div id="quests-view" class="view-panel active">
                 
-                <!-- Passport Profile Metadata Header Block -->
                 <div class="profile-container">
                     <div class="profile-photo-box">AVATAR<br>SLOT</div>
                     <div class="profile-info">
@@ -459,7 +481,7 @@
 
                 <h2>Active Quest Circuits</h2>
 
-                <!-- QUEST NODE 1 (Cyan Theme) -->
+                <!-- QUEST CARD 1 -->
                 <div class="quest-box" id="q1">
                     <div class="quest-header">
                         <div class="quest-title">Quest 1: The Gateway Node</div>
@@ -472,10 +494,10 @@
                         <li class="task-item"><input type="checkbox" onchange="updateEngine()"/> Log onto the internal network and configure local environment (Setup PC).</li>
                         <li class="task-item bonus"><input type="checkbox" onchange="updateEngine()"/> BONUS: Make a beverage of choice using the espresso machine.</li>
                     </ul>
-                    <button class="btn-scan" onclick="triggerScan('q1')">Scan QR Code</button>
+                    <button class="btn-scan" onclick="triggerScan()">Scan Stamp Code</button>
                 </div>
 
-                <!-- QUEST NODE 2 (Purple Theme) -->
+                <!-- QUEST CARD 2 -->
                 <div class="quest-box purple" id="q2">
                     <div class="quest-header">
                         <div class="quest-title">Quest 2: Establish Connection</div>
@@ -483,14 +505,14 @@
                     </div>
                     <div class="quest-desc">Synchronize communication links and sync with leadership networks.</div>
                     <ul class="task-list">
-                        <li class="task-item"><input type="checkbox" onchange="updateEngine()"/> Connect with a fellow Entelectual and ask about YEF and DevDay.</li>
+                        <li class="task-item"><input type="checkbox" onchange="updateEngine()"/> Connect with a fellow Entelectual and ask them about YEF and DevDay.</li>
                         <li class="task-item"><input type="checkbox" onchange="updateEngine()"/> Meet the office commander, head of CPT office.</li>
                         <li class="task-item"><input type="checkbox" onchange="updateEngine()"/> Give Junaid and Jake continuous feedback on inductions.</li>
                     </ul>
-                    <button class="btn-scan" onclick="triggerScan('q2')">Scan QR Code</button>
+                    <button class="btn-scan" onclick="triggerScan()">Scan Stamp Code</button>
                 </div>
 
-                <!-- QUEST NODE 3 (Rose Theme) -->
+                <!-- QUEST CARD 3 -->
                 <div class="quest-box rose" id="q3">
                     <div class="quest-header">
                         <div class="quest-title">Quest 3: Sync up to the Culture</div>
@@ -502,10 +524,10 @@
                         <li class="task-item"><input type="checkbox" onchange="updateEngine()"/> Earn Entelect Rewards by the end of this week.</li>
                         <li class="task-item"><input type="checkbox" onchange="updateEngine()"/> Join a social club.</li>
                     </ul>
-                    <button class="btn-scan" onclick="triggerScan('q3')">Scan QR Code</button>
+                    <button class="btn-scan" onclick="triggerScan()">Scan Stamp Code</button>
                 </div>
 
-                <!-- QUEST NODE 4 (Amber Theme) -->
+                <!-- QUEST CARD 4 -->
                 <div class="quest-box amber" id="q4">
                     <div class="quest-header">
                         <div class="quest-title">Quest 4: Connect with the Fleet</div>
@@ -518,12 +540,12 @@
                         <li class="task-item"><input type="checkbox" onchange="updateEngine()"/> Locate and say hi to the marketing team.</li>
                         <li class="task-item bonus"><input type="checkbox" onchange="updateEngine()"/> BONUS: Post a story about your onboarding journey and @Entelect.</li>
                     </ul>
-                    <button class="btn-scan" onclick="triggerScan('q4')">Scan QR Code</button>
+                    <button class="btn-scan" onclick="triggerScan()">Scan Stamp Code</button>
                 </div>
 
             </div>
 
-            <!-- TAB SCREEN 2: ALL 6 CHARACTER ARCHETYPES DIRECTORY -->
+            <!-- TAB 2: CLASS ARCHETYPES DIRECTORY -->
             <div id="archetypes-view" class="view-panel">
                 <h2>Select Your Class Archetype</h2>
                 <div class="archetype-grid">
@@ -560,9 +582,31 @@
                 </div>
             </div>
 
+            <!-- TAB 3: LIVE QR CODE STAMP DEMO PANEL -->
+            <div id="stamps-view" class="view-panel">
+                <h2>Admin Stamp Generator</h2>
+                <div class="info-box">
+                    <strong>How to test:</strong> Show these codes on a laptop screen or another phone, then tap "Scan Stamp Code" on any completed quest card above to scan them using your device camera!
+                </div>
+
+                <div class="stamp-preview-box">
+                    <h3 style="color: #0284c7; margin:0 0 5px 0;">Stamp Code Alpha</h3>
+                    <div style="font-size: 11px; color:#64748b; margin-bottom: 10px;">Stamps and Unlocks Quests 1 & 2</div>
+                    <img class="qr-image" src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=ENTELECT-STAMP-ALPHA" alt="Stamp Alpha QR">
+                    <code style="font-size: 12px; font-weight: bold; background-color: #e2e8f0; padding: 2px 6px; border-radius: 3px;">ENTELECT-STAMP-ALPHA</code>
+                </div>
+
+                <div class="stamp-preview-box">
+                    <h3 style="color: #6d28d9; margin:0 0 5px 0;">Stamp Code Beta</h3>
+                    <div style="font-size: 11px; color:#64748b; margin-bottom: 10px;">Stamps and Unlocks Quests 3 & 4</div>
+                    <img class="qr-image" src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=ENTELECT-STAMP-BETA" alt="Stamp Beta QR">
+                    <code style="font-size: 12px; font-weight: bold; background-color: #e2e8f0; padding: 2px 6px; border-radius: 3px;">ENTELECT-STAMP-BETA</code>
+                </div>
+            </div>
+
         </div>
 
-        <!-- STICKY THUMB NAVIGATION CONTROLS -->
+        <!-- Sticky Thumb Navigation Interface -->
         <div class="bottom-nav">
             <div class="nav-item active" onclick="switchTab('quests', this)">
                 <span>📋</span>Quests
@@ -570,24 +614,34 @@
             <div class="nav-item" onclick="switchTab('archetypes', this)">
                 <span>🚀</span>Archetypes
             </div>
-        </div>
-
-        <!-- OVERLAY MODAL: SCANNER SIMULATOR -->
-        <div class="modal-overlay" id="scanner-modal">
-            <div class="modal-card">
-                <h3>Opening Verification Scanner...</h3>
-                <p style="font-size: 12px; color: #475569;">Align your device viewfinder with the Mentor or Station QR Code node.</p>
-                <div class="qr-scanner-box"></div>
-                <button class="btn-close" onclick="executeScan()">Simulate Scan Success</button>
+            <div class="nav-item" onclick="switchTab('stamps', this)">
+                <span>⚙️</span>Demo Codes
             </div>
         </div>
 
-        <!-- OVERLAY MODAL: AUTOMATED SOCIAL REWARDS PROMPT -->
+        <!-- CAMERA SCANNING MODAL VIEW -->
+        <div class="modal-overlay" id="scanner-modal">
+            <div class="modal-card">
+                <h3 style="margin-top:0;">Scanning Verification Node...</h3>
+                <p style="font-size: 11px; color: #475569; margin-bottom: 5px;">
+                    Ensure this web app is served over <strong>HTTPS</strong> for camera permissions.
+                </p>
+                
+                <!-- HTML5 QrCode camera display surface -->
+                <div id="qr-reader-container">
+                    <div id="qr-reader"></div>
+                </div>
+
+                <button class="btn-close" style="background-color: #be123c;" onclick="stopScan()">Cancel Camera Scan</button>
+            </div>
+        </div>
+
+        <!-- SUCCESS AND SOCIAL SHARING PROMPT SHEET -->
         <div class="modal-overlay" id="share-modal">
             <div class="modal-card">
                 <span style="font-size: 32px;">🏆</span>
-                <h3>Circuit Fully Synchronized!</h3>
-                <p style="font-size: 12px; color: #475569; margin-bottom: 12px;">You've unlocked your official milestone badge. Ready to broadcast your achievements to the fleet?</p>
+                <h3 style="margin: 10px 0 5px 0;">Circuit Successfully Verified!</h3>
+                <p style="font-size: 12px; color: #475569; margin-bottom: 12px;" id="share-modal-description">You have unlocked your official milestone badge. Ready to broadcast your achievements to the fleet?</p>
                 <div class="share-btn-container">
                     <a href="https://www.linkedin.com" target="_blank" class="btn-share btn-linkedin" onclick="closeShare()">Share to LinkedIn</a>
                     <a href="https://www.instagram.com" target="_blank" class="btn-share btn-instagram" onclick="closeShare()">Broadcast to Story</a>
@@ -596,9 +650,9 @@
             </div>
         </div>
 
-        <!-- OVERLAY MODAL: FULL TERMINAL OVERRIDE EASTER EGG -->
+        <!-- EASTER EGG LOOT SCREEN OVERWRITE -->
         <div class="modal-overlay" id="easter-egg-screen">
-            <h2>[!] LOOT DROP DETECTED</h2>
+            <h2>[!] LEGENDARY LOOT DROP</h2>
             <div class="terminal-text" style="margin-top: 20px;">
                 > INITIALIZING REWARD PROTOCOLS...<br>
                 > ALL 4 PASSPORT CIRCUITS LINKED: 100% SECURE.<br>
@@ -614,10 +668,10 @@
 
     <!-- Application Controller Logic Scripts -->
     <script>
-        let targetingQuestId = "";
+        let html5QrScanner = null;
         const unlockedMap = { q1: false, q2: false, q3: false, q4: false };
 
-        // Toggle app screens safely 
+        // Handle structural view tab switching
         function switchTab(target, element) {
             document.querySelectorAll('.view-panel').forEach(p => p.classList.remove('active'));
             document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
@@ -625,13 +679,13 @@
             element.classList.add('active');
         }
 
-        // Handle selection toggle within class matrix
+        // Handle class select highlighting
         function pickClass(card) {
             document.querySelectorAll('.archetype-card').forEach(c => c.classList.remove('selected'));
             card.classList.add('selected');
         }
 
-        // Primary Progress engine calculating checked boxes vs visibility rules
+        // Live checkbox configuration monitoring
         function updateEngine() {
             const boxes = document.querySelectorAll('.task-list input[type="checkbox"]');
             let totalChecked = 0;
@@ -641,7 +695,7 @@
             document.getElementById('master-progress').style.width = progressPercent + '%';
             document.getElementById('progress-label').innerText = progressPercent + '% SYNCED';
 
-            // Check box states inside specific cards to expose scan button nodes
+            // Show scan button ONLY if all tasks within a quest block are checkmarked
             ['q1', 'q2', 'q3', 'q4'].forEach(id => {
                 const questCard = document.getElementById(id);
                 const questBoxes = questCard.querySelectorAll('input[type="checkbox"]');
@@ -656,31 +710,82 @@
             });
         }
 
-        // Open QR scanner emulator view sheet
-        function triggerScan(questId) {
-            targetingQuestId = questId;
+        // Trigger live mobile camera overlay
+        function triggerScan() {
             document.getElementById('scanner-modal').style.display = 'flex';
+            
+            // Start the library scanner preferring rear-facing environment lens
+            html5QrScanner = new Html5Qrcode("qr-reader");
+            
+            const qrCodeSuccessCallback = (decodedText) => {
+                const sanitizedCode = decodedText.trim();
+                handleValidScan(sanitizedCode);
+            };
+
+            const config = { fps: 10, qrbox: { width: 200, height: 200 } };
+            
+            html5QrScanner.start(
+                { facingMode: "environment" }, 
+                config, 
+                qrCodeSuccessCallback
+            ).catch(err => {
+                console.error("Camera access failed", err);
+                // Fallback demo option if camera block occurred
+                stopScan();
+                showCustomWarning("Camera Permission Required. If testing locally without HTTPS, use the Stamp generator tab manually.");
+            });
         }
 
-        // Trigger scan validation signature change
-        function executeScan() {
+        // Gracefully kill camera processing
+        function stopScan() {
             document.getElementById('scanner-modal').style.display = 'none';
-            if (targetingQuestId) {
-                unlockedMap[targetingQuestId] = true;
-                const card = document.getElementById(targetingQuestId);
-                card.classList.add('unlocked-state');
-                document.getElementById('stamp-' + targetingQuestId).innerText = "Unlocked";
-                
-                updateEngine();
-                
-                // Fire automated prompt micro-interaction sheet
-                setTimeout(() => {
-                    document.getElementById('share-modal').style.display = 'flex';
-                }, 400);
+            if (html5QrScanner) {
+                html5QrScanner.stop().then(() => {
+                    html5QrScanner = null;
+                }).catch(err => {
+                    console.error("Failed to stop scanner cleanly", err);
+                    html5QrScanner = null;
+                });
             }
         }
 
-        // Close Share Modal and explicitly run completion sweeps to unlock Easter Egg terminal window
+        // Scan processor reading the 2 distinct structural stamps
+        function handleValidScan(scannedCode) {
+            stopScan();
+
+            let targetQuests = [];
+            let stampDescriptionText = "";
+
+            if (scannedCode === "ENTELECT-STAMP-ALPHA") {
+                targetQuests = ["q1", "q2"];
+                stampDescriptionText = "You've successfully scanned Stamp Code Alpha and unlocked both The Gateway Node and Establish Connection milestones!";
+            } else if (scannedCode === "ENTELECT-STAMP-BETA") {
+                targetQuests = ["q3", "q4"];
+                stampDescriptionText = "You've successfully scanned Stamp Code Beta and unlocked both Sync Up to the Culture and Connect with the Fleet milestones!";
+            } else {
+                showCustomWarning("Unrecognized Stamp Code. Please scan a valid Entelect signature QR.");
+                return;
+            }
+
+            // Flag relevant lists unlocked
+            targetQuests.forEach(id => {
+                unlockedMap[id] = true;
+                const card = document.getElementById(id);
+                card.classList.add('unlocked-state');
+                card.classList.remove('ready-to-scan');
+                document.getElementById('stamp-' + id).innerText = "Unlocked";
+            });
+
+            // Update modal description based on the specific scan success
+            document.getElementById('share-modal-description').innerText = stampDescriptionText;
+
+            // Trigger prompt slides
+            setTimeout(() => {
+                document.getElementById('share-modal').style.display = 'flex';
+            }, 300);
+        }
+
+        // Close sharing screens and run checks to deploy Easter Egg
         function closeShare() {
             document.getElementById('share-modal').style.display = 'none';
             
@@ -691,6 +796,42 @@
                 }, 500);
             }
         }
+
+        // Custom friendly overlay alert mechanism to respect local CSP constraints
+        function showCustomWarning(messageText) {
+            const warningBox = document.createElement("div");
+            warningBox.style.position = "absolute";
+            warningBox.style.top = "50%";
+            warningBox.style.left = "50%";
+            warningBox.style.transform = "translate(-50%, -50%)";
+            warningBox.style.backgroundColor = "#ffe4e6";
+            warningBox.style.border = "2px solid #f43f5e";
+            warningBox.style.color = "#9f1239";
+            warningBox.style.padding = "20px";
+            warningBox.style.borderRadius = "8px";
+            warningBox.style.zIndex = "300";
+            warningBox.style.width = "90%";
+            warningBox.style.maxWidth = "350px";
+            warningBox.style.textAlign = "center";
+            warningBox.style.boxShadow = "0 20px 25px -5px rgba(0,0,0,0.15)";
+            
+            warningBox.innerHTML = `
+                <h4 style="margin-top:0; color:#e11d48;">Scan Issue</h4>
+                <p style="font-size:12px; line-height:1.4;">${messageText}</p>
+                <button style="background-color:#e11d48; color:white; border:none; padding:6px 12px; border-radius:4px; font-weight:bold; cursor:pointer;" onclick="this.parentElement.remove()">Dismiss</button>
+            `;
+            document.body.appendChild(warningBox);
+        }
     </script>
 </body>
 </html>
+
+
+### ⚠️ A Crucial Note on Mobile Web Browsers (Highly Important!)
+Modern smartphones and web browsers (like Safari on iOS and Chrome on Android) have incredibly strict security rules regarding the camera. **They will only allow camera access if the website is served over HTTPS.**
+
+If you run this locally from your desktop as a raw `file:///` path, your browser will likely block camera access. However, once you deploy it using the **Netlify** or **GitHub Pages** methods we discussed, both platforms will serve your app over a secure **HTTPS** address automatically!
+
+I've also built a safety fallback into the code, so if you're testing it locally and the browser blocks camera permissions, the app won't crash; instead, it will display a lovely custom alert guide explaining the situation.
+
+Have a go with this print-friendly white layout! Give it a test run, scan those demo codes from another device, and let me know if everything feels bloody brilliant or if we need further adjustments. Cheers!
