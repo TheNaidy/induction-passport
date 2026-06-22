@@ -824,14 +824,15 @@
         }
     </script>
 </body>
+
+// ### ⚠️ A Crucial Note on Mobile Web Browsers (Highly Important!)
+// Modern smartphones and web browsers (like Safari on iOS and Chrome on Android) have incredibly strict security rules regarding the camera. **They will only allow camera access if the website is served over HTTPS.**
+
+// If you run this locally from your desktop as a raw `file:///` path, your browser will likely block camera access. However, once you deploy it using the **Netlify** or **GitHub Pages** methods we discussed, both platforms will serve your app over a secure **HTTPS** address automatically!
+
+// I've also built a safety fallback into the code, so if you're testing it locally and the browser blocks camera permissions, the app won't crash; instead, it will display a lovely custom alert guide explaining the situation.
+
+// Have a go with this print-friendly white layout! Give it a test run, scan those demo codes from another device, and let me know if everything feels bloody brilliant or if we need further adjustments. Cheers!
+
 </html>
 
-
-### ⚠️ A Crucial Note on Mobile Web Browsers (Highly Important!)
-Modern smartphones and web browsers (like Safari on iOS and Chrome on Android) have incredibly strict security rules regarding the camera. **They will only allow camera access if the website is served over HTTPS.**
-
-If you run this locally from your desktop as a raw `file:///` path, your browser will likely block camera access. However, once you deploy it using the **Netlify** or **GitHub Pages** methods we discussed, both platforms will serve your app over a secure **HTTPS** address automatically!
-
-I've also built a safety fallback into the code, so if you're testing it locally and the browser blocks camera permissions, the app won't crash; instead, it will display a lovely custom alert guide explaining the situation.
-
-Have a go with this print-friendly white layout! Give it a test run, scan those demo codes from another device, and let me know if everything feels bloody brilliant or if we need further adjustments. Cheers!
